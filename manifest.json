@@ -1,0 +1,22 @@
+{
+  "name": "Mano Sporto Programa",
+  "short_name": "Programa",
+  "description": "Asmeninė sporto treniruočių programa",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0C0C0E",
+  "theme_color": "#E85D3A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

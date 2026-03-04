@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0C0C0E">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Mano Programa</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C0C0E;--s1:rgba(255,255,255,.025);
+  --bd:rgba(255,255,255,.06);--tx:#E8E6E3;--tx2:#888;--tx3:#555;
+  --push:#E85D3A;--pull:#3A7BE8;--legs:#2EAD6B;--glut:#9B59B6;--warm:#F4A261;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;padding-top:env(safe-area-inset-top)}
+
+.hdr{position:sticky;top:0;z-index:50;background:rgba(12,12,14,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;background:linear-gradient(135deg,var(--push),var(--warm));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.save-dot{width:8px;height:8px;border-radius:50%;background:var(--legs);opacity:0;transition:opacity .3s}
+.save-dot.on{opacity:1}
+
+.week{padding:10px 16px;display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--bd)}
+.wt{padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600}
+.wt-g{background:rgba(232,93,58,.13);color:var(--push)}
+.wt-p{background:rgba(155,89,182,.13);color:#BB8FCE}
+.wt-f{background:rgba(46,173,107,.13);color:var(--legs)}
+.wt-r{background:rgba(255,255,255,.03);color:var(--tx3)}
+
+.tabs{display:flex;border-bottom:1px solid var(--bd);padding:0 16px}
+.tab{font-family:inherit;font-size:13px;font-weight:500;padding:12px 16px;background:none;border:none;color:#666;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
+.tab.on{color:var(--tx)}
+.tab.on::after{content:'';position:absolute;bottom:-1px;left:12px;right:12px;height:2px;background:var(--push);border-radius:2px}
+
+.pg{display:none;padding:16px 16px 100px}.pg.vis{display:block}
+
+.dtabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.dt{font-family:inherit;font-size:13px;font-weight:500;padding:9px 15px;border-radius:10px;white-space:nowrap;border:1px solid rgba(255,255,255,.08);background:var(--s1);color:var(--tx2);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:6px}
+.dt.a-push{border-color:var(--push);background:rgba(232,93,58,.12);color:#fff}
+.dt.a-pull{border-color:var(--pull);background:rgba(58,123,232,.12);color:#fff}
+.dt.a-legs{border-color:var(--legs);background:rgba(46,173,107,.12);color:#fff}
+.dt.a-glut{border-color:var(--glut);background:rgba(155,89,182,.12);color:#fff}
+
+.card{display:none}.card.vis{display:block;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card-h{padding:14px 16px;border-radius:12px 12px 0 0;color:#fff}
+.card-h h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+.card-b{background:var(--s1);border:1px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;overflow:hidden}
+
+.divider{padding:7px 16px;background:rgba(255,255,255,.02);border-top:1px solid var(--bd)}
+.divider span{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3)}
+
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse}
+thead th{padding:8px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);background:rgba(255,255,255,.015);border-bottom:1px solid var(--bd)}
+th.c,td.c{text-align:center}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.025)}
+tbody tr:last-child{border-bottom:none}
+td{padding:9px 10px;vertical-align:top;font-size:12px}
+td.nm{font-weight:500;color:#ddd;min-width:115px;line-height:1.35}
+td.nm .note{display:block;font-weight:400;font-size:11px;color:#777;line-height:1.4;margin-top:3px}
+
+/* Editable cells */
+td.c .ev,td .ev{display:inline-block;padding:4px 6px;border-radius:5px;cursor:pointer;min-width:30px;text-align:center;-webkit-tap-highlight-color:transparent}
+td.c .ev:active,td .ev:active{background:rgba(255,255,255,.08)}
+.ev.mt{color:var(--tx3)}
+.ev.wv{color:var(--warm);font-weight:600}
+.ev input{font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;border:1.5px solid rgba(232,93,58,.5);background:rgba(232,93,58,.08);color:#fff;text-align:center;width:60px;outline:none;-webkit-appearance:none}
+.ev.wv input{border-color:rgba(244,162,97,.5);background:rgba(244,162,97,.08);color:var(--warm)}
+
+.blk{border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--s1)}
+.blk.op{border-color:rgba(255,255,255,.1)}
+.bh{font-family:inherit;width:100%;display:flex;align-items:center;padding:11px 14px;background:none;border:none;color:#ccc;cursor:pointer;-webkit-tap-highlight-color:transparent;gap:8px;font-size:13px;font-weight:600}
+.bh .arr{color:var(--tx3);transition:transform .2s;display:inline-block}
+.blk.op .arr{transform:rotate(180deg)}
+.bh .bg{font-size:9px;padding:2px 7px;border-radius:10px;color:#fff;font-weight:600}
+.bb{display:none;padding-bottom:4px}
+.blk.op .bb{display:block}
+
+.stit{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px}
+.ssub{font-size:12px;color:var(--tx2);margin-bottom:16px;line-height:1.5}
+
+@media(min-width:640px){.pg{padding:20px 24px 100px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <span class="logo">MANO PROGRAMA</span>
+  <span class="save-dot" id="saveDot"></span>
+</div>
+
+<div class="week">
+  <span class="wt wt-g">Pr – Salė</span>
+  <span class="wt wt-p">An – Pole</span>
+  <span class="wt wt-g">Tr – Salė</span>
+  <span class="wt wt-p">Kt – Pole</span>
+  <span class="wt wt-f">Pn – Lankstumas</span>
+  <span class="wt wt-r">Š/S – Salė / Poilsis</span>
+</div>
+
+<div class="tabs" id="mtabs">
+  <button class="tab on" data-t="0">Programa</button>
+  <button class="tab" data-t="1">ABS</button>
+  <button class="tab" data-t="2">HIIT</button>
+</div>
+
+<!-- ==================== PROGRAMA ==================== -->
+<div class="pg vis" id="pg0">
+  <div class="dtabs" id="dtabs">
+    <button class="dt a-push" data-d="0">💪 Push</button>
+    <button class="dt" data-d="1">🏋️ Pull</button>
+    <button class="dt" data-d="2">🦵 Kojos</button>
+    <button class="dt" data-d="3">🍑 Sėdmenys</button>
+  </div>
+
+  <!-- PUSH -->
+  <div class="card vis" data-di="0">
+    <div class="card-h" style="background:#E85D3A"><h2>Push Day + Side Abs, Core</h2></div>
+    <div class="card-b">
+      <div class="tw"><table>
+        <thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Riešų mobilumas + "Dead Bug"<span class="note">Paruošiam riešus apkrovai.</span></td><td class="c"><span class="ev" data-k="push_0_s">2</span></td><td class="c"><span class="ev" data-k="push_0_r">1 min</span></td><td class="c"><span class="ev wv" data-k="push_0_w">-</span></td></tr>
+          <tr><td class="nm">Scapular Push-ups<span class="note">Tik mentės juda aukštyn-žemyn. Rankos per alkūnes nesilenkia</span></td><td class="c"><span class="ev" data-k="push_1_s">3</span></td><td class="c"><span class="ev" data-k="push_1_r">12-15</span></td><td class="c"><span class="ev wv" data-k="push_1_w">-</span></td></tr>
+          <tr><td class="nm">Dips<span class="note">Jei padarote 7, bandykite daryti lėtai</span></td><td class="c"><span class="ev" data-k="push_2_s">3</span></td><td class="c"><span class="ev" data-k="push_2_r">Iki negalėjimo</span></td><td class="c"><span class="ev wv" data-k="push_2_w">-</span></td></tr>
+          <tr><td class="nm">Push ups</td><td class="c"><span class="ev" data-k="push_3_s">3</span></td><td class="c"><span class="ev" data-k="push_3_r">6-8</span></td><td class="c"><span class="ev wv" data-k="push_3_w">-</span></td></tr>
+          <tr><td class="nm">Overhead Press<span class="note">Sėdint arba stovint. Svarbu: viršutiniame taške pilnai ištieskite rankas ir „ūgtelėkite" pečiais į viršų (shrug)</span></td><td class="c"><span class="ev" data-k="push_4_s">4</span></td><td class="c"><span class="ev" data-k="push_4_r">6-8</span></td><td class="c"><span class="ev wv" data-k="push_4_w">10 9 9 9</span></td></tr>
+          <tr><td class="nm">Overhead Triceps Extensions</td><td class="c"><span class="ev" data-k="push_5_s">3</span></td><td class="c"><span class="ev" data-k="push_5_r">12</span></td><td class="c"><span class="ev wv" data-k="push_5_w">10</span></td></tr>
+          <tr><td class="nm">Cable Woodchops (Medkirtys)<span class="note">Įstrižiniams raumenims (talijai)</span></td><td class="c"><span class="ev" data-k="push_6_s">3</span></td><td class="c"><span class="ev" data-k="push_6_r">12 / pusę</span></td><td class="c"><span class="ev wv" data-k="push_6_w">-</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="divider"><span>Papildomi</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Hanging Leg Raises (Kojų kėlimas)<span class="note">Apatiniam presui.</span></td><td class="c"><span class="ev" data-k="pushx_0_s"></span></td><td class="c"><span class="ev" data-k="pushx_0_r">10</span></td><td class="c"><span class="ev wv" data-k="pushx_0_w">-</span></td></tr>
+          <tr><td class="nm">Suitcase Carry (Lagamino nešimas)<span class="note">Eiti nešant sunkų svorį vienoje rankoje. Kūnas turi būti idealiai tiesus.</span></td><td class="c"><span class="ev" data-k="pushx_1_s">3</span></td><td class="c"><span class="ev" data-k="pushx_1_r">30m / pusę</span></td><td class="c"><span class="ev wv" data-k="pushx_1_w">20 kg</span></td></tr>
+          <tr><td class="nm">Renegade row<span class="note">Plankas su hanteliais, traukti po hantelę prie klubų</span></td><td class="c"><span class="ev" data-k="pushx_2_s"></span></td><td class="c"><span class="ev" data-k="pushx_2_r">10 / pusę</span></td><td class="c"><span class="ev wv" data-k="pushx_2_w">8</span></td></tr>
+          <tr><td class="nm">Hollow Body Hold<span class="note">Juosmuo privalo liesti žemę.</span></td><td class="c"><span class="ev" data-k="pushx_3_s"></span></td><td class="c"><span class="ev" data-k="pushx_3_r">30-45s</span></td><td class="c"><span class="ev wv" data-k="pushx_3_w">-</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- PULL -->
+  <div class="card" data-di="1">
+    <div class="card-h" style="background:#3A7BE8"><h2>Pull Day + Core</h2></div>
+    <div class="card-b">
+      <div class="tw"><table>
+        <thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Banded Pull-Aparts<span class="note">Aktyvuoti galinę deltą.</span></td><td class="c"><span class="ev" data-k="pull_0_s">2</span></td><td class="c"><span class="ev" data-k="pull_0_r">20</span></td><td class="c"><span class="ev wv" data-k="pull_0_w">-</span></td></tr>
+          <tr><td class="nm">W / Y / T raises<span class="note">Nykščiai į viršų. Fokusas į apatinę trapeciją</span></td><td class="c"><span class="ev" data-k="pull_1_s">3</span></td><td class="c"><span class="ev" data-k="pull_1_r">12</span></td><td class="c"><span class="ev wv" data-k="pull_1_w">-</span></td></tr>
+          <tr><td class="nm">Scapular Pull-ups<span class="note">Nuleisti pečius žemyn ir šiek tiek suvesti mentes. Jokių alkūnių lenkimo</span></td><td class="c"><span class="ev" data-k="pull_2_s">4</span></td><td class="c"><span class="ev" data-k="pull_2_r">10-12</span></td><td class="c"><span class="ev wv" data-k="pull_2_w">-</span></td></tr>
+          <tr><td class="nm">Chin ups</td><td class="c"><span class="ev" data-k="pull_3_s">3</span></td><td class="c"><span class="ev" data-k="pull_3_r">5,4,3</span></td><td class="c"><span class="ev wv" data-k="pull_3_w">-</span></td></tr>
+          <tr><td class="nm">Eccentric Pull-ups (Negatyvai)<span class="note">Užšokite į viršutinę prisitraukimo padėtį (smakras virš skersinio). Leiskitės žemyn kiek įmanoma lėčiau (5-8 sekundės).</span></td><td class="c"><span class="ev" data-k="pull_4_s">4</span></td><td class="c"><span class="ev" data-k="pull_4_r">3-5</span></td><td class="c"><span class="ev wv" data-k="pull_4_w">-</span></td></tr>
+          <tr><td class="nm">Reverse Pec Deck Fly</td><td class="c"><span class="ev" data-k="pull_5_s">3</span></td><td class="c"><span class="ev" data-k="pull_5_r">12</span></td><td class="c"><span class="ev wv" data-k="pull_5_w">25+</span></td></tr>
+          <tr><td class="nm">Face Pulls<span class="note">Su virve. Traukite link veido, alkūnės aukštai</span></td><td class="c"><span class="ev" data-k="pull_6_s">3</span></td><td class="c"><span class="ev" data-k="pull_6_r">15-20</span></td><td class="c"><span class="ev wv" data-k="pull_6_w">15</span></td></tr>
+          <tr><td class="nm">Barbell bent over rows<span class="note">DB row viena ranka geriau daryti</span></td><td class="c"><span class="ev" data-k="pull_7_s">3</span></td><td class="c"><span class="ev" data-k="pull_7_r">10</span></td><td class="c"><span class="ev wv" data-k="pull_7_w"></span></td></tr>
+          <tr><td class="nm">Straight Arm Pull Down</td><td class="c"><span class="ev" data-k="pull_8_s">3</span></td><td class="c"><span class="ev" data-k="pull_8_r">12</span></td><td class="c"><span class="ev wv" data-k="pull_8_w"></span></td></tr>
+          <tr><td class="nm">Bicep Curls (Hammer Grip) / peacher curls<span class="note">Kaip plaktuką</span></td><td class="c"><span class="ev" data-k="pull_9_s">3</span></td><td class="c"><span class="ev" data-k="pull_9_r">12</span></td><td class="c"><span class="ev wv" data-k="pull_9_w">6</span></td></tr>
+          <tr><td class="nm">Lateral Raises (Kėlimas į šalis)<span class="note">Lengvas svoris, aukštas dažnis</span></td><td class="c"><span class="ev" data-k="pull_10_s">3</span></td><td class="c"><span class="ev" data-k="pull_10_r">15-20</span></td><td class="c"><span class="ev wv" data-k="pull_10_w">4</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- KOJOS -->
+  <div class="card" data-di="2">
+    <div class="card-h" style="background:#2EAD6B"><h2>Kojos</h2></div>
+    <div class="card-b">
+      <div class="tw"><table>
+        <thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Foam Rolling (Krūtininė dalis)<span class="note">Svarbu išmasažuoti viršutinę nugaros dalį.</span></td><td class="c"><span class="ev" data-k="legs_0_s">1</span></td><td class="c"><span class="ev" data-k="legs_0_r">2-3 min</span></td><td class="c"><span class="ev wv" data-k="legs_0_w">-</span></td></tr>
+          <tr><td class="nm">"Puppy Dog" Stretch (Prie sienos)<span class="note">Rankos ant sienos, krūtinė spaudžiama žemyn.</span></td><td class="c"><span class="ev" data-k="legs_1_s">3</span></td><td class="c"><span class="ev" data-k="legs_1_r">30s</span></td><td class="c"><span class="ev wv" data-k="legs_1_w">-</span></td></tr>
+          <tr><td class="nm">Active Thoracic Extension<span class="note">Gulint ant pilvo, kelti krūtinę išlaikant sėdmenis įtemptus</span></td><td class="c"><span class="ev" data-k="legs_2_s">3</span></td><td class="c"><span class="ev" data-k="legs_2_r">10</span></td><td class="c"><span class="ev wv" data-k="legs_2_w">-</span></td></tr>
+          <tr><td class="nm">Deadlift (Su šlanga/Trap bar)</td><td class="c"><span class="ev" data-k="legs_3_s">4</span></td><td class="c"><span class="ev" data-k="legs_3_r">12.10.10.12</span></td><td class="c"><span class="ev wv" data-k="legs_3_w">15</span></td></tr>
+          <tr><td class="nm">Pistol squat<span class="note">Lėtai žemyn 3s - sprogstamai aukštyn. Pradėk nuo kairės</span></td><td class="c"><span class="ev" data-k="legs_4_s">3</span></td><td class="c"><span class="ev" data-k="legs_4_r">5</span></td><td class="c"><span class="ev wv" data-k="legs_4_w">-</span></td></tr>
+          <tr><td class="nm">Walking Lunges (Įtūpstai einant)<span class="note">Trumpesnis žingsnis</span></td><td class="c"><span class="ev" data-k="legs_5_s">3</span></td><td class="c"><span class="ev" data-k="legs_5_r">20 žingsnių</span></td><td class="c"><span class="ev wv" data-k="legs_5_w">8+</span></td></tr>
+          <tr><td class="nm">Kneeling Sissy Squat (Reverse Nordic)</td><td class="c"><span class="ev" data-k="legs_6_s">3</span></td><td class="c"><span class="ev" data-k="legs_6_r">6</span></td><td class="c"><span class="ev wv" data-k="legs_6_w">-</span></td></tr>
+          <tr><td class="nm">Blauzdoms pasistiebimai</td><td class="c"><span class="ev" data-k="legs_7_s">3</span></td><td class="c"><span class="ev" data-k="legs_7_r">15-20</span></td><td class="c"><span class="ev wv" data-k="legs_7_w">max</span></td></tr>
+          <tr><td class="nm">Pallof Press (Su guma/trosu)<span class="note">Stovint šonu į trosą, stumti rankas pirmyn.</span></td><td class="c"><span class="ev" data-k="legs_8_s">3</span></td><td class="c"><span class="ev" data-k="legs_8_r">12-15</span></td><td class="c"><span class="ev wv" data-k="legs_8_w">-</span></td></tr>
+          <tr><td class="nm">ABS_5</td><td class="c"><span class="ev" data-k="legs_9_s">3</span></td><td class="c"><span class="ev" data-k="legs_9_r">40 sec</span></td><td class="c"><span class="ev wv" data-k="legs_9_w"></span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SĖDMENYS -->
+  <div class="card" data-di="3">
+    <div class="card-h" style="background:#9B59B6"><h2>Sėdmenys</h2></div>
+    <div class="card-b">
+      <div class="tw"><table>
+        <thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Box jumps</td><td class="c"><span class="ev" data-k="glut_0_s">3</span></td><td class="c"><span class="ev" data-k="glut_0_r">5-10</span></td><td class="c"><span class="ev wv" data-k="glut_0_w">-</span></td></tr>
+          <tr><td class="nm">Hip Thrusts (Dubens kėlimas)<span class="note">Sunkus svoris. Sulaikyti viršuje 2s.</span></td><td class="c"><span class="ev" data-k="glut_1_s">4</span></td><td class="c"><span class="ev" data-k="glut_1_r">12-15</span></td><td class="c"><span class="ev wv" data-k="glut_1_w">20</span></td></tr>
+          <tr><td class="nm">Bulgarian Split Squats<span class="note">Korpusas šiek tiek pasvires pirmyn</span></td><td class="c"><span class="ev" data-k="glut_2_s"></span></td><td class="c"><span class="ev" data-k="glut_2_r">8-10 / koja</span></td><td class="c"><span class="ev wv" data-k="glut_2_w">10</span></td></tr>
+          <tr><td class="nm">RDL (Rumuniška trauka)</td><td class="c"><span class="ev" data-k="glut_3_s">3</span></td><td class="c"><span class="ev" data-k="glut_3_r">10-12</span></td><td class="c"><span class="ev wv" data-k="glut_3_w">10</span></td></tr>
+          <tr><td class="nm">Leg curls treniruoklis</td><td class="c"><span class="ev" data-k="glut_4_s">3</span></td><td class="c"><span class="ev" data-k="glut_4_r">12</span></td><td class="c"><span class="ev wv" data-k="glut_4_w"></span></td></tr>
+          <tr><td class="nm">Kettlebell Swings (Rovimas)</td><td class="c"><span class="ev" data-k="glut_5_s"></span></td><td class="c"><span class="ev" data-k="glut_5_r"></span></td><td class="c"><span class="ev wv" data-k="glut_5_w">16</span></td></tr>
+          <tr><td class="nm">Wall ball arb gal V-Ups</td><td class="c"><span class="ev" data-k="glut_6_s">3-4</span></td><td class="c"><span class="ev" data-k="glut_6_r">40 sek</span></td><td class="c"><span class="ev wv" data-k="glut_6_w">8</span></td></tr>
+          <tr><td class="nm">Gymnastic ball knee tuck</td><td class="c"><span class="ev" data-k="glut_7_s"></span></td><td class="c"><span class="ev" data-k="glut_7_r"></span></td><td class="c"><span class="ev wv" data-k="glut_7_w"></span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ABS ==================== -->
+<div class="pg" id="pg1">
+  <div class="stit">🔥 ABS Variantai</div>
+  <p class="ssub">Po kiekvienos treniruotės pasirink vieną iš šių abs programų.</p>
+
+  <div class="blk op" id="a0"><button class="bh" onclick="tog('a0')"><span class="arr">▾</span>ABS 1<span class="bg" style="background:#E85D3A">4</span></button><div class="bb"><div class="tw"><table><thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead><tbody>
+    <tr><td class="nm">Dead bug + kg</td><td class="c"><span class="ev" data-k="ab0_0_s">3</span></td><td class="c"><span class="ev" data-k="ab0_0_r"></span></td><td class="c"><span class="ev wv" data-k="ab0_0_w">8</span></td></tr>
+    <tr><td class="nm">Hollow body hold</td><td class="c"><span class="ev" data-k="ab0_1_s"></span></td><td class="c"><span class="ev" data-k="ab0_1_r">40 sec</span></td><td class="c"><span class="ev wv" data-k="ab0_1_w"></span></td></tr>
+    <tr><td class="nm">L-sit invert plank</td><td class="c"><span class="ev" data-k="ab0_2_s"></span></td><td class="c"><span class="ev" data-k="ab0_2_r"></span></td><td class="c"><span class="ev wv" data-k="ab0_2_w"></span></td></tr>
+    <tr><td class="nm">Side plank laikyt</td><td class="c"><span class="ev" data-k="ab0_3_s"></span></td><td class="c"><span class="ev" data-k="ab0_3_r"></span></td><td class="c"><span class="ev wv" data-k="ab0_3_w"></span></td></tr>
+  </tbody></table></div></div></div>
+
+  <div class="blk" id="a1"><button class="bh" onclick="tog('a1')"><span class="arr">▾</span>ABS 2<span class="bg" style="background:#E85D3A">5</span></button><div class="bb"><div class="tw"><table><thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead><tbody>
+    <tr><td class="nm">Side hollow body pulses</td><td class="c"><span class="ev" data-k="ab1_0_s">3</span></td><td class="c"><span class="ev" data-k="ab1_0_r">15 / pusę</span></td><td class="c"><span class="ev wv" data-k="ab1_0_w"></span></td></tr>
+    <tr><td class="nm">Russian twist</td><td class="c"><span class="ev" data-k="ab1_1_s"></span></td><td class="c"><span class="ev" data-k="ab1_1_r">20</span></td><td class="c"><span class="ev wv" data-k="ab1_1_w">10</span></td></tr>
+    <tr><td class="nm">Side plank kilnoti</td><td class="c"><span class="ev" data-k="ab1_2_s"></span></td><td class="c"><span class="ev" data-k="ab1_2_r">12 / pusę</span></td><td class="c"><span class="ev wv" data-k="ab1_2_w"></span></td></tr>
+    <tr><td class="nm">Side plank reach through + kg</td><td class="c"><span class="ev" data-k="ab1_3_s"></span></td><td class="c"><span class="ev" data-k="ab1_3_r">10 / pusę</span></td><td class="c"><span class="ev wv" data-k="ab1_3_w">7</span></td></tr>
+    <tr><td class="nm">Plank rolls</td><td class="c"><span class="ev" data-k="ab1_4_s"></span></td><td class="c"><span class="ev" data-k="ab1_4_r">10 / pusę</span></td><td class="c"><span class="ev wv" data-k="ab1_4_w"></span></td></tr>
+  </tbody></table></div></div></div>
+
+  <div class="blk" id="a2"><button class="bh" onclick="tog('a2')"><span class="arr">▾</span>ABS 3<span class="bg" style="background:#E85D3A">4</span></button><div class="bb"><div class="tw"><table><thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead><tbody>
+    <tr><td class="nm">Hanging leg raises</td><td class="c"><span class="ev" data-k="ab2_0_s">3</span></td><td class="c"><span class="ev" data-k="ab2_0_r">10</span></td><td class="c"><span class="ev wv" data-k="ab2_0_w"></span></td></tr>
+    <tr><td class="nm">Flutter kicks</td><td class="c"><span class="ev" data-k="ab2_1_s"></span></td><td class="c"><span class="ev" data-k="ab2_1_r">30 sec</span></td><td class="c"><span class="ev wv" data-k="ab2_1_w"></span></td></tr>
+    <tr><td class="nm">Heels to the heavens</td><td class="c"><span class="ev" data-k="ab2_2_s"></span></td><td class="c"><span class="ev" data-k="ab2_2_r">15</span></td><td class="c"><span class="ev wv" data-k="ab2_2_w"></span></td></tr>
+    <tr><td class="nm">V-ups</td><td class="c"><span class="ev" data-k="ab2_3_s"></span></td><td class="c"><span class="ev" data-k="ab2_3_r">12</span></td><td class="c"><span class="ev wv" data-k="ab2_3_w"></span></td></tr>
+  </tbody></table></div></div></div>
+
+  <div class="blk" id="a3"><button class="bh" onclick="tog('a3')"><span class="arr">▾</span>ABS 4<span class="bg" style="background:#E85D3A">4</span></button><div class="bb"><div class="tw"><table><thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead><tbody>
+    <tr><td class="nm">Mountain climbers</td><td class="c"><span class="ev" data-k="ab3_0_s">3</span></td><td class="c"><span class="ev" data-k="ab3_0_r">30 sec</span></td><td class="c"><span class="ev wv" data-k="ab3_0_w"></span></td></tr>
+    <tr><td class="nm">Gymnastic ball knee tucks</td><td class="c"><span class="ev" data-k="ab3_1_s"></span></td><td class="c"><span class="ev" data-k="ab3_1_r">12</span></td><td class="c"><span class="ev wv" data-k="ab3_1_w"></span></td></tr>
+    <tr><td class="nm">Dviratūkas</td><td class="c"><span class="ev" data-k="ab3_2_s"></span></td><td class="c"><span class="ev" data-k="ab3_2_r">20 / pusę</span></td><td class="c"><span class="ev wv" data-k="ab3_2_w"></span></td></tr>
+    <tr><td class="nm">Pritraukti kojas susiriečiant</td><td class="c"><span class="ev" data-k="ab3_3_s"></span></td><td class="c"><span class="ev" data-k="ab3_3_r">15</span></td><td class="c"><span class="ev wv" data-k="ab3_3_w"></span></td></tr>
+  </tbody></table></div></div></div>
+
+  <div class="blk" id="a4"><button class="bh" onclick="tog('a4')"><span class="arr">▾</span>ABS 5<span class="bg" style="background:#E85D3A">4</span></button><div class="bb"><div class="tw"><table><thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead><tbody>
+    <tr><td class="nm">L-sit</td><td class="c"><span class="ev" data-k="ab4_0_s">3</span></td><td class="c"><span class="ev" data-k="ab4_0_r"></span></td><td class="c"><span class="ev wv" data-k="ab4_0_w"></span></td></tr>
+    <tr><td class="nm">Hanging leg raises</td><td class="c"><span class="ev" data-k="ab4_1_s"></span></td><td class="c"><span class="ev" data-k="ab4_1_r">40 sec</span></td><td class="c"><span class="ev wv" data-k="ab4_1_w"></span></td></tr>
+    <tr><td class="nm">Weighted sit-up</td><td class="c"><span class="ev" data-k="ab4_2_s"></span></td><td class="c"><span class="ev" data-k="ab4_2_r"></span></td><td class="c"><span class="ev wv" data-k="ab4_2_w">9</span></td></tr>
+    <tr><td class="nm">Plankas nuo kamuolio</td><td class="c"><span class="ev" data-k="ab4_3_s"></span></td><td class="c"><span class="ev" data-k="ab4_3_r"></span></td><td class="c"><span class="ev wv" data-k="ab4_3_w"></span></td></tr>
+  </tbody></table></div></div></div>
+</div>
+
+<!-- ==================== HIIT ==================== -->
+<div class="pg" id="pg2">
+  <div class="stit">⚡ HIIT Circuit</div>
+  <p class="ssub">Kartais vietoj pagrindinės treniruotės – intensyvus kardio.</p>
+
+  <div class="blk op" id="h0"><button class="bh" onclick="tog('h0')"><span class="arr">▾</span>HIIT 1<span class="bg" style="background:#F4A261">4</span></button><div class="bb"><div class="tw"><table><thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead><tbody>
+    <tr><td class="nm">Kettlebell Swings (Rovimas)</td><td class="c"><span class="ev" data-k="ht0_0_s">3-4</span></td><td class="c"><span class="ev" data-k="ht0_0_r">50 sek</span></td><td class="c"><span class="ev wv" data-k="ht0_0_w">16</span></td></tr>
+    <tr><td class="nm">Box Jumps / Step ups</td><td class="c"><span class="ev" data-k="ht0_1_s"></span></td><td class="c"><span class="ev" data-k="ht0_1_r"></span></td><td class="c"><span class="ev wv" data-k="ht0_1_w"></span></td></tr>
+    <tr><td class="nm">Wall ball</td><td class="c"><span class="ev" data-k="ht0_2_s"></span></td><td class="c"><span class="ev" data-k="ht0_2_r"></span></td><td class="c"><span class="ev wv" data-k="ht0_2_w">8</span></td></tr>
+    <tr><td class="nm">Gymnastic ball knee tuck</td><td class="c"><span class="ev" data-k="ht0_3_s"></span></td><td class="c"><span class="ev" data-k="ht0_3_r"></span></td><td class="c"><span class="ev wv" data-k="ht0_3_w"></span></td></tr>
+  </tbody></table></div></div></div>
+
+  <div class="blk" id="h1"><button class="bh" onclick="tog('h1')"><span class="arr">▾</span>HIIT 2<span class="bg" style="background:#F4A261">3</span></button><div class="bb"><div class="tw"><table><thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead><tbody>
+    <tr><td class="nm">Irklavimo treniruoklis</td><td class="c"><span class="ev" data-k="ht1_0_s">4</span></td><td class="c"><span class="ev" data-k="ht1_0_r">45 sek</span></td><td class="c"><span class="ev wv" data-k="ht1_0_w"></span></td></tr>
+    <tr><td class="nm">Dumbbell Thrusters</td><td class="c"><span class="ev" data-k="ht1_1_s"></span></td><td class="c"><span class="ev" data-k="ht1_1_r">45 sek</span></td><td class="c"><span class="ev wv" data-k="ht1_1_w"></span></td></tr>
+    <tr><td class="nm">Push-ups</td><td class="c"><span class="ev" data-k="ht1_2_s"></span></td><td class="c"><span class="ev" data-k="ht1_2_r"></span></td><td class="c"><span class="ev wv" data-k="ht1_2_w"></span></td></tr>
+  </tbody></table></div></div></div>
+
+  <div class="blk" id="h2"><button class="bh" onclick="tog('h2')"><span class="arr">▾</span>HIIT 3 – Pyramid<span class="bg" style="background:#F4A261">10</span></button><div class="bb"><div class="tw"><table><thead><tr><th>Pratimas</th><th class="c">Sets</th><th class="c">Reps</th><th class="c">Svoris</th></tr></thead><tbody>
+    <tr><td class="nm">500 m irklavimas</td><td class="c"><span class="ev" data-k="ht2_0_s"></span></td><td class="c"><span class="ev" data-k="ht2_0_r"></span></td><td class="c"><span class="ev wv" data-k="ht2_0_w"></span></td></tr>
+    <tr><td class="nm">Dumbbell Snatches</td><td class="c"><span class="ev" data-k="ht2_1_s"></span></td><td class="c"><span class="ev" data-k="ht2_1_r">10 / pusę</span></td><td class="c"><span class="ev wv" data-k="ht2_1_w"></span></td></tr>
+    <tr><td class="nm">400 m irklavimas</td><td class="c"><span class="ev" data-k="ht2_2_s"></span></td><td class="c"><span class="ev" data-k="ht2_2_r"></span></td><td class="c"><span class="ev wv" data-k="ht2_2_w"></span></td></tr>
+    <tr><td class="nm">Dumbbell Snatches</td><td class="c"><span class="ev" data-k="ht2_3_s"></span></td><td class="c"><span class="ev" data-k="ht2_3_r">8 / pusę</span></td><td class="c"><span class="ev wv" data-k="ht2_3_w"></span></td></tr>
+    <tr><td class="nm">300 m irklavimas</td><td class="c"><span class="ev" data-k="ht2_4_s"></span></td><td class="c"><span class="ev" data-k="ht2_4_r"></span></td><td class="c"><span class="ev wv" data-k="ht2_4_w"></span></td></tr>
+    <tr><td class="nm">Dumbbell Snatches</td><td class="c"><span class="ev" data-k="ht2_5_s"></span></td><td class="c"><span class="ev" data-k="ht2_5_r">6 / pusę</span></td><td class="c"><span class="ev wv" data-k="ht2_5_w"></span></td></tr>
+    <tr><td class="nm">200 m irklavimas</td><td class="c"><span class="ev" data-k="ht2_6_s"></span></td><td class="c"><span class="ev" data-k="ht2_6_r"></span></td><td class="c"><span class="ev wv" data-k="ht2_6_w"></span></td></tr>
+    <tr><td class="nm">Dumbbell Snatches</td><td class="c"><span class="ev" data-k="ht2_7_s"></span></td><td class="c"><span class="ev" data-k="ht2_7_r">4 / pusę</span></td><td class="c"><span class="ev wv" data-k="ht2_7_w"></span></td></tr>
+    <tr><td class="nm">100 m irklavimas</td><td class="c"><span class="ev" data-k="ht2_8_s"></span></td><td class="c"><span class="ev" data-k="ht2_8_r"></span></td><td class="c"><span class="ev wv" data-k="ht2_8_w"></span></td></tr>
+    <tr><td class="nm">Dumbbell Snatches</td><td class="c"><span class="ev" data-k="ht2_9_s"></span></td><td class="c"><span class="ev" data-k="ht2_9_r">2 / pusę</span></td><td class="c"><span class="ev wv" data-k="ht2_9_w"></span></td></tr>
+  </tbody></table></div></div></div>
+</div>
+
+<script>
+var ACLS = ["a-push","a-pull","a-legs","a-glut"];
+var STORE_KEY = "programa_data";
+var defaults = {};
+
+function tog(id) {
+  var el = document.getElementById(id);
+  if (el.className.indexOf("op") >= 0) el.className = el.className.replace(" op","");
+  else el.className += " op";
+}
+
+function flash() {
+  var d = document.getElementById("saveDot");
+  d.className = "save-dot on";
+  setTimeout(function(){ d.className = "save-dot"; }, 800);
+}
+
+// Save/load from localStorage
+function saveAll() {
+  var data = {};
+  var cells = document.querySelectorAll(".ev");
+  for (var i = 0; i < cells.length; i++) {
+    var k = cells[i].getAttribute("data-k");
+    var v = cells[i].textContent;
+    if (v !== defaults[k]) data[k] = v;
+  }
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e){}
+  flash();
+}
+
+function loadAll() {
+  var raw;
+  try { raw = localStorage.getItem(STORE_KEY); } catch(e){}
+  if (!raw) return;
+  var data;
+  try { data = JSON.parse(raw); } catch(e){ return; }
+  var cells = document.querySelectorAll(".ev");
+  for (var i = 0; i < cells.length; i++) {
+    var k = cells[i].getAttribute("data-k");
+    if (data[k] !== undefined) {
+      cells[i].textContent = data[k];
+      if (!data[k]) cells[i].classList.add("mt"); else cells[i].classList.remove("mt");
+    }
+  }
+}
+
+// Record defaults & mark empty
+function init() {
+  var cells = document.querySelectorAll(".ev");
+  for (var i = 0; i < cells.length; i++) {
+    var k = cells[i].getAttribute("data-k");
+    var v = cells[i].textContent;
+    defaults[k] = v;
+    if (!v || !v.trim()) cells[i].classList.add("mt");
+  }
+  loadAll();
+}
+
+// Inline editing
+document.addEventListener("click", function(ev) {
+  var t = ev.target;
+
+  // Toggle collapse
+  var togBtn = t.closest ? t.closest("[onclick]") : null;
+  // handled by onclick
+
+  // Editable
+  if (t.classList && t.classList.contains("ev") && !t.querySelector("input")) {
+    var k = t.getAttribute("data-k");
+    if (!k) return;
+    var cur = t.textContent;
+    if (cur === "\u2014") cur = "";
+    var inp = document.createElement("input");
+    inp.type = "text";
+    inp.value = cur;
+    t.textContent = "";
+    t.appendChild(inp);
+    inp.focus();
+    try { inp.select(); } catch(e){}
+
+    function done() {
+      var v = inp.value.replace(/^\s+|\s+$/g,"");
+      try { t.removeChild(inp); } catch(e){}
+      t.textContent = v || "";
+      if (!v) t.classList.add("mt"); else t.classList.remove("mt");
+      saveAll();
+    }
+    inp.addEventListener("blur", done);
+    inp.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" || e.keyCode === 13) inp.blur();
+    });
+  }
+});
+
+// Tabs
+document.getElementById("mtabs").addEventListener("click", function(e) {
+  var b = e.target;
+  if (!b.getAttribute("data-t")) return;
+  var i = b.getAttribute("data-t");
+  var tabs = document.querySelectorAll(".tab");
+  for (var j = 0; j < tabs.length; j++) tabs[j].className = "tab";
+  b.className = "tab on";
+  var pgs = document.querySelectorAll(".pg");
+  for (var k = 0; k < pgs.length; k++) pgs[k].className = "pg";
+  document.getElementById("pg" + i).className = "pg vis";
+});
+
+document.getElementById("dtabs").addEventListener("click", function(e) {
+  var b = e.target;
+  if (!b.getAttribute("data-d")) return;
+  var i = parseInt(b.getAttribute("data-d"));
+  var dts = document.querySelectorAll(".dt");
+  for (var j = 0; j < dts.length; j++) dts[j].className = "dt";
+  b.className = "dt " + ACLS[i];
+  var cards = document.querySelectorAll(".card");
+  for (var k = 0; k < cards.length; k++) cards[k].className = "card";
+  var target = document.querySelector('.card[data-di="' + i + '"]');
+  if (target) target.className = "card vis";
+});
+
+// Register service worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(function(){});
+}
+
+init();
+</script>
+</body>
+</html>
