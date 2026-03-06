@@ -1,4 +1,4 @@
-var CACHE_NAME = 'programa-v1';
+var CACHE_NAME = 'programa-v2';
 var URLS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e) {
@@ -22,10 +22,17 @@ self.addEventListener('activate', function(e) {
   self.clients.claim();
 });
 
+// Network-first: always try fresh version, fall back to cache offline
 self.addEventListener('fetch', function(e) {
   e.respondWith(
-    caches.match(e.request).then(function(r) {
-      return r || fetch(e.request);
+    fetch(e.request).then(function(response) {
+      var clone = response.clone();
+      caches.open(CACHE_NAME).then(function(cache) {
+        cache.put(e.request, clone);
+      });
+      return response;
+    }).catch(function() {
+      return caches.match(e.request);
     })
   );
 });
