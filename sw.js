@@ -1,4 +1,4 @@
-var CACHE_NAME = 'programa-v2';
+var CACHE_NAME = 'programa-v4';
 var URLS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e) {
@@ -22,7 +22,6 @@ self.addEventListener('activate', function(e) {
   self.clients.claim();
 });
 
-// Network-first: always try fresh version, fall back to cache offline
 self.addEventListener('fetch', function(e) {
   e.respondWith(
     fetch(e.request).then(function(response) {
